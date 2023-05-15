@@ -1,0 +1,31 @@
+{
+  "name": "ws-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "forever index.js",
+    "watch": "forever -w index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MaXx111/ws-backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MaXx111/ws-backend/issues"
+  },
+  "homepage": "https://github.com/MaXx111/ws-backend#readme",
+  "dependencies": {
+    "forever": "^4.0.3",
+    "http-event-stream": "^0.2.0",
+    "koa": "^2.14.2",
+    "koa-body": "^6.0.1",
+    "koa-combine-routers": "^4.0.2",
+    "koa-router": "^12.0.0",
+    "koa-static": "^5.0.0",
+    "uuid": "^9.0.0",
+    "ws": "^8.13.0"
+  }
+}
