@@ -54,22 +54,46 @@ const wsServer = new WS.Server({
   server
 });
 
-const chat = ['welcome to our chat'];
-
 wsServer.on('connection', (ws) => {
   ws.on('message', (message) => {
-    chat.push(message.toString());
-    console.log(message)
 
-    const eventData = JSON.stringify({ chat: [message.toString()] });
+    const eventData = JSON.parse(message.toString());
 
+    setMsg(eventData);
     Array.from(wsServer.clients)
       .filter(client => client.readyState === WS.OPEN)
-      .forEach(client => client.send(eventData));
+      .forEach(client => {
+        let msg = getMsg(eventData)
+          client.send(JSON.stringify(msg));
+        })
   });
 
-  ws.send(JSON.stringify({ chat }));
+  ws.send(JSON.stringify(chat));
 });
 
-
 server.listen(port);
+
+const chat = [];
+
+function setMsg(obj) {
+    let date = new Date();
+    let today = date.toLocaleString();
+    obj.date = today
+    chat.push(obj)
+}
+
+function getMsg(obj) {
+    let chatForFilter = chat;
+    chatForFilter.filter(item => {
+        item.nick === obj.nick;
+    });
+
+    let msg
+    chatForFilter.forEach(item => {
+        if(item.message === obj.message) {
+            msg = item;
+        }
+    })
+
+    return msg;
+}
