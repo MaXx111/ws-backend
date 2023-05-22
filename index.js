@@ -3,8 +3,9 @@ const Koa = require('koa');
 const { koaBody } = require('koa-body');
 const WS = require('ws');
 
+const chat = require('./db/chat.js')
+const players = require('./db/players.js')
 const app = new Koa();
-
 const router = require('./routes');
 
 app.use(koaBody({
@@ -55,25 +56,40 @@ const wsServer = new WS.Server({
 });
 
 wsServer.on('connection', (ws) => {
-  ws.on('message', (message) => {
+  ws.on('message', (obj) => {
+    const eventData = JSON.parse(obj.toString());
 
-    const eventData = JSON.parse(message.toString());
+    if(eventData.type === `msg`) {
+      setMsg(eventData);
 
-    setMsg(eventData);
-    Array.from(wsServer.clients)
-      .filter(client => client.readyState === WS.OPEN)
-      .forEach(client => {
-        let msg = getMsg(eventData)
-          client.send(JSON.stringify(msg));
-        })
+      Array.from(wsServer.clients)
+        .filter(client => client.readyState === WS.OPEN)
+        .forEach(client => {
+          let msg = getMsg(eventData)
+            client.send(JSON.stringify({chat: [msg]}));
+          })
+    }
+
+    if(eventData.type === `unLoadPlayer`) {
+      removePlayer(eventData.nick);
+      
+      Array.from(wsServer.clients)
+        .filter(client => client.readyState === WS.OPEN)
+        .forEach(client => {
+            client.send(JSON.stringify({players: players}));
+          })
+    }
   });
 
-  ws.send(JSON.stringify(chat));
+  ws.send(JSON.stringify({chat: chat}));
+  Array.from(wsServer.clients)
+        .filter(client => client.readyState === WS.OPEN)
+        .forEach(client => {
+            client.send(JSON.stringify({players: players}));
+  })
 });
 
 server.listen(port);
-
-const chat = [];
 
 function setMsg(obj) {
     let date = new Date();
@@ -96,4 +112,10 @@ function getMsg(obj) {
     })
 
     return msg;
+}
+
+function removePlayer(nick) {
+  let index = players.indexOf(nick)
+
+  players.splice(index, 1);
 }
